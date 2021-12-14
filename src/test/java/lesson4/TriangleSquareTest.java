@@ -22,30 +22,25 @@ public class TriangleSquareTest {
     }
 
     @Test
-    @DisplayName("Проверка метода triangleSquare при передаче отрицательного либо нулевого значения")
+    @DisplayName("Проверка метода triangleSquare, если стороны треугольника имеют отрицательное или нулевое значение")
     void testGivenNullOrMinusSideWhenTriangleSquareThenException() {
         assertAll(
-                () -> assertThatExceptionOfType(IncorectSideException.class).isThrownBy(() -> triangleSquare(0, 1, 1)),
-                () -> assertThatExceptionOfType(IncorectSideException.class).isThrownBy(() -> triangleSquare(-1, 1, 1)),
+                () -> assertThatExceptionOfType(IncorectSideException.class).isThrownBy(() -> triangleSquare(1, 1, 0)),
+                () -> assertThatExceptionOfType(IncorectSideException.class).isThrownBy(() -> triangleSquare(1, 1, -1)),
                 () -> assertThatExceptionOfType(IncorectSideException.class).isThrownBy(() -> triangleSquare(-1, -1, 1)),
-                () -> assertThatExceptionOfType(IncorectSideException.class).isThrownBy(() -> triangleSquare(0, -1, 0))
+                () -> assertThatExceptionOfType(IncorectSideException.class).isThrownBy(() -> triangleSquare(0, 0, -1))
         );
     }
 
     @Test
-    @DisplayName("Проверка метода triangleSquare с целыми числами и целым результатом")
+    @DisplayName("Проверка метода triangleSquare, где стороны и площадь - целые числа")
     void testGivenIntegersSidesWhenTriangleSquareThenCorrectResult() throws IncorectSideException {
         assertEquals(triangleSquare(6, 8, 10), 24);
     }
 
-    @Test
-    @DisplayName("Проверка метода triangleSquare при получении нецелового значения")
-    void testGivenSidesWhenTriangleSquareThenDoubleResult() throws IncorectSideException {
-        assertEquals(triangleSquare(6, 5, 2.2), (double) 5.28);
-    }
 
     @Test
-    @DisplayName("Проверка метода triangleSquare при передаче сторон не образующих треугольник")
+    @DisplayName("Проверка метода triangleSquare, если стороны не образуют треугольник")
     void testGivenIncorrectSidesWhenTriangleSquareThenException() {
         assertThatExceptionOfType(IncorectSideException.class).isThrownBy(() -> triangleSquare(1, 2, 1));
     }
