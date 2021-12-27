@@ -1,6 +1,9 @@
 package lesson6;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
+import io.qameta.allure.Allure;
+import io.qameta.allure.Description;
+import lesson7.CustomLogger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,10 +11,17 @@ import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.logging.LogEntries;
+import org.openqa.selenium.logging.LogEntry;
+import org.openqa.selenium.logging.LogType;
+import org.openqa.selenium.support.events.EventFiringWebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.util.Iterator;
 
 public class KassirSpbTest<driver> {
     WebDriver driver;
+    EventFiringWebDriver eventFiringWebDriver;
     MainPage mainPage;
     LoginBlock loginBlock;
     private final static String BASE_URL = "https://spb.kassir.ru/";
@@ -25,29 +35,32 @@ public class KassirSpbTest<driver> {
 
     @BeforeEach
     void setupDriver() {
-        driver = new ChromeDriver();
-        webDriverWait = new WebDriverWait(driver, 5);
-        actions = new Actions(driver);
-        mainPage = new MainPage(driver);
-        loginBlock = new LoginBlock(driver);
-        driver.get(BASE_URL);
+        eventFiringWebDriver = new EventFiringWebDriver(new ChromeDriver());
+//        driver = new ChromeDriver();
+        eventFiringWebDriver.register(new CustomLogger());
+        webDriverWait = new WebDriverWait(eventFiringWebDriver, 5);
+        actions = new Actions(eventFiringWebDriver);
+        mainPage = new MainPage(eventFiringWebDriver);
+        loginBlock = new LoginBlock(eventFiringWebDriver);
+        eventFiringWebDriver.get(BASE_URL);
     }
 
     @Test
+    @Description("Тест Добавление билета в корзину")
     public void addTicketToBasketTest() throws InterruptedException {
-        new MainPage(driver).clickLoginButton();
+        new MainPage(eventFiringWebDriver).clickLoginButton();
         Thread.sleep(5000);
 
-        new LoginBlock(driver)
+        new LoginBlock(eventFiringWebDriver)
                 .fillLoginInput("yatokinmi@yandex.ru")
                 .fillPasswordInput("kassirtest")
                 .submitLogin();
         Thread.sleep(5000);
 
-        new MainPage(driver).clickSportButton();
+        new MainPage(eventFiringWebDriver).clickSportButton();
         Thread.sleep(5000);
 
-        new SportPage(driver)
+        new SportPage(eventFiringWebDriver)
                 .chooseEvent()
                 .goToTicketSelection()
                 .sectorSelection()
@@ -59,7 +72,14 @@ public class KassirSpbTest<driver> {
 
     @AfterEach
     void tearDown() {
-        driver.quit();
-    }
+        LogEntries logs = eventFiringWebDriver.manage().logs().get(LogType.BROWSER);
+        Iterator<LogEntry> iterator = logs.iterator();
 
+        while (iterator.hasNext()) {
+            Allure.addAttachment("Элемент лога браузера", iterator.next().getMessage());
+
+            eventFiringWebDriver.quit();
+        }
+
+    }
 }
